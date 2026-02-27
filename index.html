@@ -1,0 +1,851 @@
+import { useState, useEffect, useCallback } from "react";
+import * as XLSX from "xlsx";
+
+const STUDENTS = [
+  {no:1,matricule:"LPK-3E1-001",nom:"OUEDRAOGO Valentin",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0739958838",classe:"3ème 1"},
+  {no:2,matricule:"LPK-3E1-002",nom:"SAWADOGO Wéndlamita",sexe:"F",age:18,lieu:"Koudougou",tel:"0789254563",classe:"3ème 1"},
+  {no:3,matricule:"LPK-3E1-003",nom:"OUEDRAOGO Alassane",sexe:"M",age:15,lieu:"Ouagadougou",tel:"0777827638",classe:"3ème 1"},
+  {no:4,matricule:"LPK-3E1-004",nom:"ILBOUDO Emmanuel",sexe:"M",age:18,lieu:"Banfora",tel:"0739587039",classe:"3ème 1"},
+  {no:5,matricule:"LPK-3E1-005",nom:"COULIBALY Xavier",sexe:"M",age:14,lieu:"Manga",tel:"0731429110",classe:"3ème 1"},
+  {no:6,matricule:"LPK-3E1-006",nom:"SANKARA Gnato",sexe:"M",age:15,lieu:"Ouagadougou",tel:"0755176955",classe:"3ème 1"},
+  {no:7,matricule:"LPK-3E1-007",nom:"TAPSOBA Djénéba",sexe:"F",age:16,lieu:"Manga",tel:"0756164955",classe:"3ème 1"},
+  {no:8,matricule:"LPK-3E1-008",nom:"TRAORE Valentin",sexe:"M",age:17,lieu:"Dédougou",tel:"0726753883",classe:"3ème 1"},
+  {no:9,matricule:"LPK-3E1-009",nom:"TAPSOBA Alassane",sexe:"M",age:18,lieu:"Bobo-Dioulasso",tel:"0794374605",classe:"3ème 1"},
+  {no:10,matricule:"LPK-3E1-010",nom:"YAMEOGO Quentin",sexe:"M",age:15,lieu:"Fada",tel:"0719335534",classe:"3ème 1"},
+  {no:11,matricule:"LPK-3E1-011",nom:"DIALLO Joséphine",sexe:"F",age:14,lieu:"Manga",tel:"0741244663",classe:"3ème 1"},
+  {no:12,matricule:"LPK-3E1-012",nom:"TAPSOBA Gnato",sexe:"M",age:17,lieu:"Fada",tel:"0758966946",classe:"3ème 1"},
+  {no:13,matricule:"LPK-3E1-013",nom:"YAMEOGO Grâce",sexe:"F",age:16,lieu:"Fada",tel:"0796977837",classe:"3ème 1"},
+  {no:14,matricule:"LPK-3E1-014",nom:"DA Safiatou",sexe:"F",age:15,lieu:"Ouagadougou",tel:"0772043515",classe:"3ème 1"},
+  {no:15,matricule:"LPK-3E1-015",nom:"ILBOUDO Haoua",sexe:"F",age:16,lieu:"Manga",tel:"0717507864",classe:"3ème 1"},
+  {no:16,matricule:"LPK-3E1-016",nom:"TRAORE Kadiatou",sexe:"F",age:17,lieu:"Bobo-Dioulasso",tel:"0718883684",classe:"3ème 1"},
+  {no:17,matricule:"LPK-3E1-017",nom:"COMPAORÉ Ysabelle",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0797971488",classe:"3ème 1"},
+  {no:18,matricule:"LPK-3E1-018",nom:"KONATE Cheick",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0743101783",classe:"3ème 1"},
+  {no:19,matricule:"LPK-3E1-019",nom:"ILBOUDO Gnato",sexe:"M",age:18,lieu:"Banfora",tel:"0788320463",classe:"3ème 1"},
+  {no:20,matricule:"LPK-3E1-020",nom:"DIALLO Cheick",sexe:"M",age:18,lieu:"Banfora",tel:"0722201654",classe:"3ème 1"},
+  {no:21,matricule:"LPK-3E1-021",nom:"SAWADOGO Cheick",sexe:"M",age:15,lieu:"Manga",tel:"0766661351",classe:"3ème 1"},
+  {no:22,matricule:"LPK-3E1-022",nom:"TAPSOBA Kassoum",sexe:"M",age:18,lieu:"Banfora",tel:"0781016525",classe:"3ème 1"},
+  {no:23,matricule:"LPK-3E1-023",nom:"ILBOUDO Aminata",sexe:"F",age:14,lieu:"Fada",tel:"0782070937",classe:"3ème 1"},
+  {no:24,matricule:"LPK-3E1-024",nom:"SANKARA Boureima",sexe:"M",age:16,lieu:"Banfora",tel:"0731227574",classe:"3ème 1"},
+  {no:25,matricule:"LPK-3E1-025",nom:"COULIBALY Oumarou",sexe:"M",age:15,lieu:"Dédougou",tel:"0724282218",classe:"3ème 1"},
+  {no:26,matricule:"LPK-3E1-026",nom:"ZONGO Yacouba",sexe:"M",age:18,lieu:"Dédougou",tel:"0736697396",classe:"3ème 1"},
+  {no:27,matricule:"LPK-3E1-027",nom:"DA Safiatou",sexe:"F",age:18,lieu:"Koudougou",tel:"0790388981",classe:"3ème 1"},
+  {no:28,matricule:"LPK-3E1-028",nom:"OUEDRAOGO Djénéba",sexe:"F",age:16,lieu:"Manga",tel:"0751273847",classe:"3ème 1"},
+  {no:29,matricule:"LPK-3E1-029",nom:"DIALLO Thérèse",sexe:"F",age:14,lieu:"Koudougou",tel:"0775228535",classe:"3ème 1"},
+  {no:30,matricule:"LPK-3E1-030",nom:"ILBOUDO Wendpanga",sexe:"M",age:15,lieu:"Ouagadougou",tel:"0798550256",classe:"3ème 1"},
+  {no:31,matricule:"LPK-3E1-031",nom:"ILBOUDO Drissa",sexe:"M",age:16,lieu:"Dédougou",tel:"0791415657",classe:"3ème 1"},
+  {no:32,matricule:"LPK-3E1-032",nom:"BARRY Pascal",sexe:"M",age:15,lieu:"Fada",tel:"0751837852",classe:"3ème 1"},
+  {no:33,matricule:"LPK-3E1-033",nom:"YAMEOGO Mahamadi",sexe:"M",age:18,lieu:"Banfora",tel:"0726240908",classe:"3ème 1"},
+  {no:34,matricule:"LPK-3E1-034",nom:"KABORE Kadiatou",sexe:"F",age:14,lieu:"Dédougou",tel:"0784346088",classe:"3ème 1"},
+  {no:35,matricule:"LPK-3E1-035",nom:"DIALLO Aminata",sexe:"F",age:14,lieu:"Fada",tel:"0794705205",classe:"3ème 1"},
+  {no:36,matricule:"LPK-3E1-036",nom:"KABORE Bintou",sexe:"F",age:16,lieu:"Koudougou",tel:"0779008866",classe:"3ème 1"},
+  {no:37,matricule:"LPK-3E1-037",nom:"KIEMA Grâce",sexe:"F",age:18,lieu:"Ouagadougou",tel:"0786644106",classe:"3ème 1"},
+  {no:38,matricule:"LPK-3E1-038",nom:"DIALLO Xavier",sexe:"M",age:17,lieu:"Manga",tel:"0764634663",classe:"3ème 1"},
+  {no:39,matricule:"LPK-3E1-039",nom:"SAWADOGO Wéndlamita",sexe:"F",age:17,lieu:"Bobo-Dioulasso",tel:"0766851760",classe:"3ème 1"},
+  {no:40,matricule:"LPK-3E1-040",nom:"TRAORE Touwendé",sexe:"M",age:14,lieu:"Koudougou",tel:"0764038913",classe:"3ème 1"},
+  {no:41,matricule:"LPK-3E1-041",nom:"SAWADOGO Fidèle",sexe:"M",age:15,lieu:"Ouagadougou",tel:"0781979055",classe:"3ème 1"},
+  {no:42,matricule:"LPK-3E1-042",nom:"BAMBA Drissa",sexe:"M",age:16,lieu:"Banfora",tel:"0743528453",classe:"3ème 1"},
+  {no:43,matricule:"LPK-3E1-043",nom:"KABORE Mahamadi",sexe:"M",age:18,lieu:"Koudougou",tel:"0716789850",classe:"3ème 1"},
+  {no:44,matricule:"LPK-3E1-044",nom:"ILBOUDO Yacouba",sexe:"M",age:14,lieu:"Koudougou",tel:"0741726318",classe:"3ème 1"},
+  {no:45,matricule:"LPK-3E1-045",nom:"KIEMA Prisca",sexe:"F",age:15,lieu:"Manga",tel:"0763826716",classe:"3ème 1"},
+  {no:46,matricule:"LPK-3E1-046",nom:"DA Kassoum",sexe:"M",age:14,lieu:"Banfora",tel:"0745594951",classe:"3ème 1"},
+  {no:47,matricule:"LPK-3E1-047",nom:"KONATE Hervé",sexe:"M",age:17,lieu:"Fada",tel:"0784593961",classe:"3ème 1"},
+  {no:48,matricule:"LPK-3E1-048",nom:"KIEMA Cheick",sexe:"M",age:15,lieu:"Bobo-Dioulasso",tel:"0739219319",classe:"3ème 1"},
+  {no:49,matricule:"LPK-3E1-049",nom:"COMPAORÉ Valentin",sexe:"M",age:18,lieu:"Koudougou",tel:"0752091325",classe:"3ème 1"},
+  {no:50,matricule:"LPK-3E1-050",nom:"COMPAORÉ Prisca",sexe:"F",age:18,lieu:"Manga",tel:"0781286543",classe:"3ème 1"},
+  {no:51,matricule:"LPK-3E1-051",nom:"TOE Clarisse",sexe:"F",age:15,lieu:"Koudougou",tel:"0789864260",classe:"3ème 1"},
+  {no:52,matricule:"LPK-3E1-052",nom:"DIALLO Mariam",sexe:"F",age:14,lieu:"Dédougou",tel:"0743046464",classe:"3ème 1"},
+  {no:53,matricule:"LPK-3E1-053",nom:"TRAORE Rasmané",sexe:"M",age:14,lieu:"Banfora",tel:"0798231132",classe:"3ème 1"},
+  {no:54,matricule:"LPK-3E1-054",nom:"TOE Ibrahima",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0799889098",classe:"3ème 1"},
+  {no:55,matricule:"LPK-3E1-055",nom:"DIALLO Gnato",sexe:"M",age:17,lieu:"Ouagadougou",tel:"0796637649",classe:"3ème 1"},
+  {no:56,matricule:"LPK-3E1-056",nom:"SANKARA Clarisse",sexe:"F",age:14,lieu:"Banfora",tel:"0793370583",classe:"3ème 1"},
+  {no:57,matricule:"LPK-3E1-057",nom:"SAWADOGO Alassane",sexe:"M",age:18,lieu:"Ouagadougou",tel:"0777898694",classe:"3ème 1"},
+  {no:58,matricule:"LPK-3E1-058",nom:"YAMEOGO Clarisse",sexe:"F",age:15,lieu:"Bobo-Dioulasso",tel:"0748250360",classe:"3ème 1"},
+  {no:59,matricule:"LPK-3E1-059",nom:"ILBOUDO Ysabelle",sexe:"F",age:16,lieu:"Dédougou",tel:"0797775215",classe:"3ème 1"},
+  {no:60,matricule:"LPK-3E1-060",nom:"ILBOUDO Hervé",sexe:"M",age:14,lieu:"Ouagadougou",tel:"0745496015",classe:"3ème 1"},
+  {no:61,matricule:"LPK-3E1-061",nom:"SAWADOGO Zénabou",sexe:"F",age:18,lieu:"Ouagadougou",tel:"0746553958",classe:"3ème 1"},
+  {no:62,matricule:"LPK-3E1-062",nom:"BARRY Ysabelle",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0795125977",classe:"3ème 1"},
+  {no:63,matricule:"LPK-3E1-063",nom:"TOE Noufou",sexe:"M",age:16,lieu:"Manga",tel:"0716818112",classe:"3ème 1"},
+  {no:64,matricule:"LPK-3E1-064",nom:"BAMBA Inès",sexe:"F",age:14,lieu:"Koudougou",tel:"0754769200",classe:"3ème 1"},
+  {no:65,matricule:"LPK-3E1-065",nom:"COULIBALY Drissa",sexe:"M",age:17,lieu:"Dédougou",tel:"0767403166",classe:"3ème 1"},
+  {no:66,matricule:"LPK-3E1-066",nom:"SAWADOGO Alassane",sexe:"M",age:15,lieu:"Dédougou",tel:"0714835614",classe:"3ème 1"},
+  {no:67,matricule:"LPK-3E1-067",nom:"COMPAORÉ Pascal",sexe:"M",age:15,lieu:"Banfora",tel:"0727105448",classe:"3ème 1"},
+  {no:68,matricule:"LPK-3E1-068",nom:"YAMEOGO Bintou",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0743491314",classe:"3ème 1"},
+  {no:69,matricule:"LPK-3E1-069",nom:"YAMEOGO Wendpanga",sexe:"M",age:18,lieu:"Manga",tel:"0764543049",classe:"3ème 1"},
+  {no:70,matricule:"LPK-3E1-070",nom:"SOME Fidèle",sexe:"M",age:15,lieu:"Manga",tel:"0733763566",classe:"3ème 1"},
+  {no:71,matricule:"LPK-3E1-071",nom:"OUEDRAOGO Drissa",sexe:"M",age:16,lieu:"Manga",tel:"0765259205",classe:"3ème 1"},
+  {no:72,matricule:"LPK-3E1-072",nom:"DIALLO Gnato",sexe:"M",age:15,lieu:"Manga",tel:"0724508349",classe:"3ème 1"},
+  {no:73,matricule:"LPK-3E2-073",nom:"TRAORE Zacharie",sexe:"M",age:17,lieu:"Ouagadougou",tel:"0736786211",classe:"3ème 2"},
+  {no:74,matricule:"LPK-3E2-074",nom:"KONATE Jean",sexe:"M",age:16,lieu:"Manga",tel:"0740547349",classe:"3ème 2"},
+  {no:75,matricule:"LPK-3E2-075",nom:"BARRY Mariam",sexe:"F",age:16,lieu:"Bobo-Dioulasso",tel:"0719317495",classe:"3ème 2"},
+  {no:76,matricule:"LPK-3E2-076",nom:"COULIBALY Jean",sexe:"M",age:18,lieu:"Banfora",tel:"0781969657",classe:"3ème 2"},
+  {no:77,matricule:"LPK-3E2-077",nom:"OUEDRAOGO Djénéba",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0787925434",classe:"3ème 2"},
+  {no:78,matricule:"LPK-3E2-078",nom:"COULIBALY Adama",sexe:"M",age:14,lieu:"Dédougou",tel:"0768326160",classe:"3ème 2"},
+  {no:79,matricule:"LPK-3E2-079",nom:"SANKARA Nathalie",sexe:"F",age:18,lieu:"Dédougou",tel:"0725521714",classe:"3ème 2"},
+  {no:80,matricule:"LPK-3E2-080",nom:"COMPAORÉ Emmanuel",sexe:"M",age:16,lieu:"Koudougou",tel:"0768526649",classe:"3ème 2"},
+  {no:81,matricule:"LPK-3E2-081",nom:"ILBOUDO Wéndlamita",sexe:"F",age:15,lieu:"Bobo-Dioulasso",tel:"0767887757",classe:"3ème 2"},
+  {no:82,matricule:"LPK-3E2-082",nom:"SANKARA Ursula",sexe:"F",age:16,lieu:"Fada",tel:"0726726926",classe:"3ème 2"},
+  {no:83,matricule:"LPK-3E2-083",nom:"ZONGO Oumarou",sexe:"M",age:16,lieu:"Fada",tel:"0764813568",classe:"3ème 2"},
+  {no:84,matricule:"LPK-3E2-084",nom:"ZONGO Safiatou",sexe:"F",age:15,lieu:"Ouagadougou",tel:"0766431351",classe:"3ème 2"},
+  {no:85,matricule:"LPK-3E2-085",nom:"TAPSOBA Touwendé",sexe:"M",age:15,lieu:"Dédougou",tel:"0786384014",classe:"3ème 2"},
+  {no:86,matricule:"LPK-3E2-086",nom:"ILBOUDO Aminata",sexe:"F",age:16,lieu:"Bobo-Dioulasso",tel:"0738210242",classe:"3ème 2"},
+  {no:87,matricule:"LPK-3E2-087",nom:"COMPAORÉ Rasmané",sexe:"M",age:16,lieu:"Banfora",tel:"0769295515",classe:"3ème 2"},
+  {no:88,matricule:"LPK-3E2-088",nom:"BARRY Oumarou",sexe:"M",age:17,lieu:"Manga",tel:"0732775593",classe:"3ème 2"},
+  {no:89,matricule:"LPK-3E2-089",nom:"ZONGO Oumarou",sexe:"M",age:18,lieu:"Bobo-Dioulasso",tel:"0722534217",classe:"3ème 2"},
+  {no:90,matricule:"LPK-3E2-090",nom:"DIALLO Touwendé",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0736726767",classe:"3ème 2"},
+  {no:91,matricule:"LPK-3E2-091",nom:"TRAORE Haoua",sexe:"F",age:17,lieu:"Dédougou",tel:"0719774839",classe:"3ème 2"},
+  {no:92,matricule:"LPK-3E2-092",nom:"COMPAORÉ Emmanuel",sexe:"M",age:17,lieu:"Banfora",tel:"0763640499",classe:"3ème 2"},
+  {no:93,matricule:"LPK-3E2-093",nom:"OUEDRAOGO Djénéba",sexe:"F",age:17,lieu:"Ouagadougou",tel:"0733607110",classe:"3ème 2"},
+  {no:94,matricule:"LPK-3E2-094",nom:"TOE Mahamadi",sexe:"M",age:14,lieu:"Dédougou",tel:"0743446826",classe:"3ème 2"},
+  {no:95,matricule:"LPK-3E2-095",nom:"SAWADOGO Mahamadi",sexe:"M",age:15,lieu:"Manga",tel:"0772363359",classe:"3ème 2"},
+  {no:96,matricule:"LPK-3E2-096",nom:"ILBOUDO Rasmané",sexe:"M",age:16,lieu:"Manga",tel:"0769401199",classe:"3ème 2"},
+  {no:97,matricule:"LPK-3E2-097",nom:"TOE Lamine",sexe:"M",age:18,lieu:"Banfora",tel:"0731361812",classe:"3ème 2"},
+  {no:98,matricule:"LPK-3E2-098",nom:"KIEMA Mahamadi",sexe:"M",age:16,lieu:"Manga",tel:"0743183955",classe:"3ème 2"},
+  {no:99,matricule:"LPK-3E2-099",nom:"COULIBALY Wendpanga",sexe:"M",age:18,lieu:"Banfora",tel:"0794120751",classe:"3ème 2"},
+  {no:100,matricule:"LPK-3E2-100",nom:"KONATE Clarisse",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0746468984",classe:"3ème 2"},
+  {no:101,matricule:"LPK-3E2-101",nom:"ILBOUDO Clarisse",sexe:"F",age:15,lieu:"Ouagadougou",tel:"0741039390",classe:"3ème 2"},
+  {no:102,matricule:"LPK-3E2-102",nom:"SOME Urbain",sexe:"M",age:15,lieu:"Koudougou",tel:"0765682626",classe:"3ème 2"},
+  {no:103,matricule:"LPK-3E2-103",nom:"ILBOUDO Mahamadi",sexe:"M",age:17,lieu:"Koudougou",tel:"0737760841",classe:"3ème 2"},
+  {no:104,matricule:"LPK-3E2-104",nom:"TAPSOBA Wendpanga",sexe:"M",age:18,lieu:"Fada",tel:"0712621534",classe:"3ème 2"},
+  {no:105,matricule:"LPK-3E2-105",nom:"COMPAORÉ Kassoum",sexe:"M",age:17,lieu:"Koudougou",tel:"0757212267",classe:"3ème 2"},
+  {no:106,matricule:"LPK-3E2-106",nom:"TAPSOBA Nathalie",sexe:"F",age:18,lieu:"Fada",tel:"0783300637",classe:"3ème 2"},
+  {no:107,matricule:"LPK-3E2-107",nom:"DIALLO Noufou",sexe:"M",age:15,lieu:"Bobo-Dioulasso",tel:"0768496914",classe:"3ème 2"},
+  {no:108,matricule:"LPK-3E2-108",nom:"TAPSOBA Ibrahima",sexe:"M",age:17,lieu:"Fada",tel:"0732151928",classe:"3ème 2"},
+  {no:109,matricule:"LPK-3E2-109",nom:"SOME Rasmané",sexe:"M",age:18,lieu:"Koudougou",tel:"0762884503",classe:"3ème 2"},
+  {no:110,matricule:"LPK-3E2-110",nom:"OUEDRAOGO Alassane",sexe:"M",age:17,lieu:"Ouagadougou",tel:"0771968116",classe:"3ème 2"},
+  {no:111,matricule:"LPK-3E2-111",nom:"COULIBALY Mariam",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0771028710",classe:"3ème 2"},
+  {no:112,matricule:"LPK-3E2-112",nom:"TAPSOBA Inès",sexe:"F",age:17,lieu:"Bobo-Dioulasso",tel:"0720993268",classe:"3ème 2"},
+  {no:113,matricule:"LPK-3E2-113",nom:"ILBOUDO Adama",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0797260863",classe:"3ème 2"},
+  {no:114,matricule:"LPK-3E2-114",nom:"TRAORE Aminata",sexe:"F",age:15,lieu:"Ouagadougou",tel:"0712735359",classe:"3ème 2"},
+  {no:115,matricule:"LPK-3E2-115",nom:"DIALLO Cheick",sexe:"M",age:17,lieu:"Fada",tel:"0725353091",classe:"3ème 2"},
+  {no:116,matricule:"LPK-3E2-116",nom:"BARRY Mahamadi",sexe:"M",age:16,lieu:"Manga",tel:"0759512272",classe:"3ème 2"},
+  {no:117,matricule:"LPK-3E2-117",nom:"NACOULMA Zénabou",sexe:"F",age:14,lieu:"Manga",tel:"0731980274",classe:"3ème 2"},
+  {no:118,matricule:"LPK-3E2-118",nom:"SAWADOGO Quentin",sexe:"M",age:14,lieu:"Bobo-Dioulasso",tel:"0787282128",classe:"3ème 2"},
+  {no:119,matricule:"LPK-3E2-119",nom:"TAPSOBA Kassoum",sexe:"M",age:15,lieu:"Koudougou",tel:"0789470029",classe:"3ème 2"},
+  {no:120,matricule:"LPK-3E2-120",nom:"DIALLO Boureima",sexe:"M",age:16,lieu:"Manga",tel:"0790585882",classe:"3ème 2"},
+  {no:121,matricule:"LPK-3E2-121",nom:"COMPAORÉ Xavier",sexe:"M",age:14,lieu:"Bobo-Dioulasso",tel:"0781503856",classe:"3ème 2"},
+  {no:122,matricule:"LPK-3E2-122",nom:"YAMEOGO Alassane",sexe:"M",age:18,lieu:"Fada",tel:"0755799273",classe:"3ème 2"},
+  {no:123,matricule:"LPK-3E2-123",nom:"BAMBA Prisca",sexe:"F",age:14,lieu:"Banfora",tel:"0758612055",classe:"3ème 2"},
+  {no:124,matricule:"LPK-3E2-124",nom:"KONATE Urbain",sexe:"M",age:15,lieu:"Banfora",tel:"0733640702",classe:"3ème 2"},
+  {no:125,matricule:"LPK-3E2-125",nom:"COULIBALY Rasmané",sexe:"M",age:18,lieu:"Manga",tel:"0774893936",classe:"3ème 2"},
+  {no:126,matricule:"LPK-3E2-126",nom:"COMPAORÉ Gnato",sexe:"M",age:16,lieu:"Manga",tel:"0742949803",classe:"3ème 2"},
+  {no:127,matricule:"LPK-3E2-127",nom:"KABORE Gnato",sexe:"M",age:17,lieu:"Ouagadougou",tel:"0772372114",classe:"3ème 2"},
+  {no:128,matricule:"LPK-3E2-128",nom:"TAPSOBA Ibrahima",sexe:"M",age:14,lieu:"Banfora",tel:"0753622663",classe:"3ème 2"},
+  {no:129,matricule:"LPK-3E2-129",nom:"BARRY Laetitia",sexe:"F",age:16,lieu:"Bobo-Dioulasso",tel:"0747535126",classe:"3ème 2"},
+  {no:130,matricule:"LPK-3E2-130",nom:"COULIBALY Pascal",sexe:"M",age:14,lieu:"Dédougou",tel:"0735643159",classe:"3ème 2"},
+  {no:131,matricule:"LPK-3E2-131",nom:"BAMBA Prisca",sexe:"F",age:18,lieu:"Manga",tel:"0742255732",classe:"3ème 2"},
+  {no:132,matricule:"LPK-3E2-132",nom:"KIEMA Mahamadi",sexe:"M",age:14,lieu:"Koudougou",tel:"0749491631",classe:"3ème 2"},
+  {no:133,matricule:"LPK-3E2-133",nom:"DIALLO Joséphine",sexe:"F",age:18,lieu:"Bobo-Dioulasso",tel:"0773519947",classe:"3ème 2"},
+  {no:134,matricule:"LPK-3E2-134",nom:"YAMEOGO Lamine",sexe:"M",age:18,lieu:"Bobo-Dioulasso",tel:"0757219209",classe:"3ème 2"},
+  {no:135,matricule:"LPK-3E2-135",nom:"COULIBALY Hervé",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0726194158",classe:"3ème 2"},
+  {no:136,matricule:"LPK-3E2-136",nom:"SANKARA Boureima",sexe:"M",age:18,lieu:"Manga",tel:"0734850391",classe:"3ème 2"},
+  {no:137,matricule:"LPK-3E2-137",nom:"KIEMA Inès",sexe:"F",age:18,lieu:"Manga",tel:"0780415568",classe:"3ème 2"},
+  {no:138,matricule:"LPK-3E2-138",nom:"SAWADOGO Yacouba",sexe:"M",age:15,lieu:"Bobo-Dioulasso",tel:"0740532273",classe:"3ème 2"},
+  {no:139,matricule:"LPK-3E2-139",nom:"ZONGO Aminata",sexe:"F",age:18,lieu:"Ouagadougou",tel:"0746817443",classe:"3ème 2"},
+  {no:140,matricule:"LPK-3E2-140",nom:"TRAORE Safiatou",sexe:"F",age:16,lieu:"Fada",tel:"0726948946",classe:"3ème 2"},
+  {no:141,matricule:"LPK-3E2-141",nom:"KIEMA Boureima",sexe:"M",age:14,lieu:"Dédougou",tel:"0748163378",classe:"3ème 2"},
+  {no:142,matricule:"LPK-3E2-142",nom:"KONATE Ibrahima",sexe:"M",age:15,lieu:"Koudougou",tel:"0743887075",classe:"3ème 2"},
+  {no:143,matricule:"LPK-1A3-143",nom:"KIEMA Boureima",sexe:"M",age:14,lieu:"Banfora",tel:"0776001106",classe:"1ère A3"},
+  {no:144,matricule:"LPK-1A3-144",nom:"TRAORE Edwige",sexe:"F",age:15,lieu:"Manga",tel:"0785543051",classe:"1ère A3"},
+  {no:145,matricule:"LPK-1A3-145",nom:"KABORE Fidèle",sexe:"M",age:14,lieu:"Dédougou",tel:"0765857931",classe:"1ère A3"},
+  {no:146,matricule:"LPK-1A3-146",nom:"NACOULMA Fidèle",sexe:"M",age:18,lieu:"Banfora",tel:"0770467027",classe:"1ère A3"},
+  {no:147,matricule:"LPK-1A3-147",nom:"ZONGO Zacharie",sexe:"M",age:18,lieu:"Banfora",tel:"0750987442",classe:"1ère A3"},
+  {no:148,matricule:"LPK-1A3-148",nom:"TRAORE Rasmané",sexe:"M",age:14,lieu:"Manga",tel:"0737888820",classe:"1ère A3"},
+  {no:149,matricule:"LPK-1A3-149",nom:"COULIBALY Touwendé",sexe:"M",age:14,lieu:"Ouagadougou",tel:"0742194159",classe:"1ère A3"},
+  {no:150,matricule:"LPK-1A3-150",nom:"KABORE Fatimata",sexe:"F",age:14,lieu:"Banfora",tel:"0770465583",classe:"1ère A3"},
+  {no:151,matricule:"LPK-1A3-151",nom:"KIEMA Hervé",sexe:"M",age:14,lieu:"Ouagadougou",tel:"0748668783",classe:"1ère A3"},
+  {no:152,matricule:"LPK-1A3-152",nom:"KONATE Alassane",sexe:"M",age:15,lieu:"Bobo-Dioulasso",tel:"0793893865",classe:"1ère A3"},
+  {no:153,matricule:"LPK-1A3-153",nom:"BARRY Lamine",sexe:"M",age:14,lieu:"Dédougou",tel:"0740173413",classe:"1ère A3"},
+  {no:154,matricule:"LPK-1A3-154",nom:"COULIBALY Yacouba",sexe:"M",age:15,lieu:"Koudougou",tel:"0718004482",classe:"1ère A3"},
+  {no:155,matricule:"LPK-1A3-155",nom:"ZONGO Ursula",sexe:"F",age:18,lieu:"Bobo-Dioulasso",tel:"0768942178",classe:"1ère A3"},
+  {no:156,matricule:"LPK-1A3-156",nom:"ZONGO Ysabelle",sexe:"F",age:17,lieu:"Bobo-Dioulasso",tel:"0777172238",classe:"1ère A3"},
+  {no:157,matricule:"LPK-1A3-157",nom:"KONATE Alassane",sexe:"M",age:18,lieu:"Koudougou",tel:"0767985905",classe:"1ère A3"},
+  {no:158,matricule:"LPK-1A3-158",nom:"NACOULMA Gnato",sexe:"M",age:14,lieu:"Koudougou",tel:"0740725714",classe:"1ère A3"},
+  {no:159,matricule:"LPK-1A3-159",nom:"COMPAORÉ Quentin",sexe:"M",age:14,lieu:"Manga",tel:"0746173157",classe:"1ère A3"},
+  {no:160,matricule:"LPK-1A3-160",nom:"DA Noufou",sexe:"M",age:18,lieu:"Fada",tel:"0769355025",classe:"1ère A3"},
+  {no:161,matricule:"LPK-1A3-161",nom:"DA Quentin",sexe:"M",age:17,lieu:"Fada",tel:"0775998319",classe:"1ère A3"},
+  {no:162,matricule:"LPK-1A3-162",nom:"KIEMA Jean",sexe:"M",age:17,lieu:"Bobo-Dioulasso",tel:"0753091709",classe:"1ère A3"},
+  {no:163,matricule:"LPK-1A3-163",nom:"DA Ibrahima",sexe:"M",age:17,lieu:"Fada",tel:"0776500726",classe:"1ère A3"},
+  {no:164,matricule:"LPK-1A3-164",nom:"TAPSOBA Safiatou",sexe:"F",age:14,lieu:"Banfora",tel:"0721819185",classe:"1ère A3"},
+  {no:165,matricule:"LPK-1A3-165",nom:"SANKARA Djénéba",sexe:"F",age:17,lieu:"Manga",tel:"0779067939",classe:"1ère A3"},
+  {no:166,matricule:"LPK-1A3-166",nom:"OUEDRAOGO Touwendé",sexe:"M",age:18,lieu:"Banfora",tel:"0765465150",classe:"1ère A3"},
+  {no:167,matricule:"LPK-1A3-167",nom:"TOE Laetitia",sexe:"F",age:18,lieu:"Manga",tel:"0776906611",classe:"1ère A3"},
+  {no:168,matricule:"LPK-1A3-168",nom:"TRAORE Emmanuel",sexe:"M",age:16,lieu:"Dédougou",tel:"0727584297",classe:"1ère A3"},
+  {no:169,matricule:"LPK-1A3-169",nom:"KONATE Urbain",sexe:"M",age:17,lieu:"Koudougou",tel:"0713874790",classe:"1ère A3"},
+  {no:170,matricule:"LPK-1A3-170",nom:"NACOULMA Xavier",sexe:"M",age:15,lieu:"Fada",tel:"0731257157",classe:"1ère A3"},
+  {no:171,matricule:"LPK-1A3-171",nom:"OUEDRAOGO Safiatou",sexe:"F",age:17,lieu:"Koudougou",tel:"0740158811",classe:"1ère A3"},
+  {no:172,matricule:"LPK-1A3-172",nom:"SAWADOGO Mahamadi",sexe:"M",age:14,lieu:"Fada",tel:"0730665654",classe:"1ère A3"},
+  {no:173,matricule:"LPK-1A3-173",nom:"ZONGO Oumarou",sexe:"M",age:16,lieu:"Banfora",tel:"0774759996",classe:"1ère A3"},
+  {no:174,matricule:"LPK-1A3-174",nom:"DIALLO Mahamadi",sexe:"M",age:18,lieu:"Ouagadougou",tel:"0761484043",classe:"1ère A3"},
+  {no:175,matricule:"LPK-1A3-175",nom:"NACOULMA Rachelle",sexe:"F",age:15,lieu:"Manga",tel:"0719369750",classe:"1ère A3"},
+  {no:176,matricule:"LPK-1A3-176",nom:"BAMBA Kadiatou",sexe:"F",age:18,lieu:"Bobo-Dioulasso",tel:"0710344303",classe:"1ère A3"},
+  {no:177,matricule:"LPK-1A3-177",nom:"ZONGO Thérèse",sexe:"F",age:18,lieu:"Fada",tel:"0775718414",classe:"1ère A3"},
+  {no:178,matricule:"LPK-1A3-178",nom:"KONATE Pascal",sexe:"M",age:17,lieu:"Bobo-Dioulasso",tel:"0754619335",classe:"1ère A3"},
+  {no:179,matricule:"LPK-1A3-179",nom:"ILBOUDO Kassoum",sexe:"M",age:17,lieu:"Bobo-Dioulasso",tel:"0735320492",classe:"1ère A3"},
+  {no:180,matricule:"LPK-1A3-180",nom:"DIALLO Quentin",sexe:"M",age:17,lieu:"Ouagadougou",tel:"0765133300",classe:"1ère A3"},
+  {no:181,matricule:"LPK-1A3-181",nom:"KIEMA Ysabelle",sexe:"F",age:17,lieu:"Banfora",tel:"0799078806",classe:"1ère A3"},
+  {no:182,matricule:"LPK-1A3-182",nom:"SOME Noufou",sexe:"M",age:14,lieu:"Ouagadougou",tel:"0777416376",classe:"1ère A3"},
+  {no:183,matricule:"LPK-1A3-183",nom:"SANKARA Zacharie",sexe:"M",age:14,lieu:"Manga",tel:"0769096899",classe:"1ère A3"},
+  {no:184,matricule:"LPK-1A3-184",nom:"KONATE Aminata",sexe:"F",age:15,lieu:"Banfora",tel:"0797883261",classe:"1ère A3"},
+  {no:185,matricule:"LPK-1A3-185",nom:"KABORE Noufou",sexe:"M",age:16,lieu:"Bobo-Dioulasso",tel:"0793652460",classe:"1ère A3"},
+  {no:186,matricule:"LPK-1A3-186",nom:"KABORE Zacharie",sexe:"M",age:16,lieu:"Manga",tel:"0781621574",classe:"1ère A3"},
+  {no:187,matricule:"LPK-1A3-187",nom:"SANKARA Serge",sexe:"M",age:17,lieu:"Manga",tel:"0782613940",classe:"1ère A3"},
+  {no:188,matricule:"LPK-1A3-188",nom:"KABORE Haoua",sexe:"F",age:16,lieu:"Ouagadougou",tel:"0722130508",classe:"1ère A3"},
+  {no:189,matricule:"LPK-1A3-189",nom:"SAWADOGO Wendpanga",sexe:"M",age:14,lieu:"Banfora",tel:"0732329103",classe:"1ère A3"},
+  {no:190,matricule:"LPK-1A3-190",nom:"OUEDRAOGO Adama",sexe:"M",age:16,lieu:"Manga",tel:"0717532195",classe:"1ère A3"},
+  {no:191,matricule:"LPK-1A3-191",nom:"YAMEOGO Nathalie",sexe:"F",age:15,lieu:"Ouagadougou",tel:"0781291936",classe:"1ère A3"},
+  {no:192,matricule:"LPK-1A3-192",nom:"DA Drissa",sexe:"M",age:15,lieu:"Koudougou",tel:"0791804602",classe:"1ère A3"},
+  {no:193,matricule:"LPK-1A3-193",nom:"NACOULMA Touwendé",sexe:"M",age:15,lieu:"Banfora",tel:"0788270025",classe:"1ère A3"},
+  {no:194,matricule:"LPK-1A3-194",nom:"KONATE Véronique",sexe:"F",age:16,lieu:"Banfora",tel:"0744269370",classe:"1ère A3"},
+  {no:195,matricule:"LPK-1A3-195",nom:"KONATE Hervé",sexe:"M",age:18,lieu:"Ouagadougou",tel:"0719913576",classe:"1ère A3"},
+  {no:196,matricule:"LPK-1A3-196",nom:"YAMEOGO Quentin",sexe:"M",age:16,lieu:"Fada",tel:"0766949781",classe:"1ère A3"},
+  {no:197,matricule:"LPK-1A3-197",nom:"KONATE Zacharie",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0761632653",classe:"1ère A3"},
+  {no:198,matricule:"LPK-1A3-198",nom:"SAWADOGO Fidèle",sexe:"M",age:17,lieu:"Dédougou",tel:"0758178682",classe:"1ère A3"},
+  {no:199,matricule:"LPK-1A3-199",nom:"ZONGO Abdoul",sexe:"M",age:17,lieu:"Bobo-Dioulasso",tel:"0711086890",classe:"1ère A3"},
+  {no:200,matricule:"LPK-1A3-200",nom:"TRAORE Rasmané",sexe:"M",age:17,lieu:"Manga",tel:"0748412328",classe:"1ère A3"},
+  {no:201,matricule:"LPK-1A3-201",nom:"DIALLO Rasmané",sexe:"M",age:16,lieu:"Ouagadougou",tel:"0795445405",classe:"1ère A3"},
+  {no:202,matricule:"LPK-1A3-202",nom:"COULIBALY Wéndlamita",sexe:"F",age:15,lieu:"Fada",tel:"0723041121",classe:"1ère A3"},
+  {no:203,matricule:"LPK-1A3-203",nom:"TRAORE Hervé",sexe:"M",age:17,lieu:"Koudougou",tel:"0787789079",classe:"1ère A3"},
+  {no:204,matricule:"LPK-1A3-204",nom:"SOME Clarisse",sexe:"F",age:16,lieu:"Bobo-Dioulasso",tel:"0765767881",classe:"1ère A3"},
+  {no:205,matricule:"LPK-1A3-205",nom:"SOME Safiatou",sexe:"F",age:16,lieu:"Dédougou",tel:"0777349752",classe:"1ère A3"},
+  {no:206,matricule:"LPK-1A3-206",nom:"DA Gnato",sexe:"M",age:17,lieu:"Manga",tel:"0749613214",classe:"1ère A3"},
+  {no:207,matricule:"LPK-1A3-207",nom:"SANKARA Xavier",sexe:"M",age:14,lieu:"Banfora",tel:"0720106509",classe:"1ère A3"},
+  {no:208,matricule:"LPK-1A3-208",nom:"DIALLO Wéndlamita",sexe:"F",age:17,lieu:"Manga",tel:"0784801233",classe:"1ère A3"},
+  {no:209,matricule:"LPK-1A3-209",nom:"TAPSOBA Aminata",sexe:"F",age:16,lieu:"Dédougou",tel:"0726587799",classe:"1ère A3"},
+  {no:210,matricule:"LPK-1A3-210",nom:"COULIBALY Quentin",sexe:"M",age:17,lieu:"Manga",tel:"0795704631",classe:"1ère A3"},
+];
+
+/* ─── CONSTANTS ──────────────────────────────────────────────────────── */
+const CLASSES = ["3ème 1","3ème 2","1ère A3"];
+const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const CODES = {E1:"Expulsion cours",E2:"Retenue",E3:"Convoc. parents",E4:"Renvoi temporaire",E5:"Conseil discipline"};
+const NOW = new Date();
+const CLS = {
+  "3ème 1":{bg:"#0d2b5e",acc:"#1a4b9e",lt:"#e8eef8"},
+  "3ème 2":{bg:"#5c0f1e",acc:"#9b1b30",lt:"#faeaec"},
+  "1ère A3":{bg:"#0d4a24",acc:"#1a7a3c",lt:"#e8f6ec"},
+};
+const c = (cl) => CLS[cl] || {bg:"#333",acc:"#555",lt:"#eee"};
+
+/* ─── HELPERS ────────────────────────────────────────────────────────── */
+function calcStats(mat, abs, ret, exp) {
+  const ad=abs[mat]||{}, rd=ret[mat]||{}, ed=exp[mat]||[];
+  let nj=0,j=0,rm=0,rc=0;
+  Object.values(ad).forEach(v=>{if(v==="A")nj+=2;if(v==="J")j+=2;});
+  Object.values(rd).forEach(v=>{if(v>0){rm+=v;rc++;}});
+  return {nj,j,tot:nj+j,rm,rc,sanct:ed.length,pct:Math.max(0,Math.round(100-(nj+j)/0.4))};
+}
+function initRec(ss) {
+  const abs={},ret={},exp={};
+  ss.forEach(s=>{abs[s.matricule]={};ret[s.matricule]={};exp[s.matricule]=[];});
+  return {abs,ret,exp};
+}
+function doExportExcel(students, records, filterClasse=null) {
+  const ss = filterClasse ? students.filter(s=>s.classe===filterClasse) : students;
+  const wb = XLSX.utils.book_new();
+  const hdr = ["N°","Matricule","Nom et Prénom(s)","Sexe","Âge","Lieu","Tél. Tuteur","Classe","Abs NJ (h)","Abs Justif (h)","Retards (min)","Nb Retards","Sanctions","% Présence"];
+  const rows = [hdr, ...ss.map(s=>{
+    const st=calcStats(s.matricule,records.abs,records.ret,records.exp);
+    return [s.no,s.matricule,s.nom,s.sexe,s.age,s.lieu,s.tel,s.classe,st.nj,st.j,st.rm,st.rc,st.sanct,st.pct+"%"];
+  })];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[{wch:5},{wch:16},{wch:26},{wch:6},{wch:5},{wch:16},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12},{wch:12},{wch:11},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,"Élèves");
+  const absR=[["Matricule","Nom","Classe","Abs NJ (h)","Abs Justif (h)","Total Abs (h)"],...ss.filter(s=>calcStats(s.matricule,records.abs,records.ret,records.exp).tot>0).map(s=>{const st=calcStats(s.matricule,records.abs,records.ret,records.exp);return [s.matricule,s.nom,s.classe,st.nj,st.j,st.tot];})];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(absR),"Absences");
+  const retR=[["Matricule","Nom","Classe","Nb Retards","Total (min)"],...ss.filter(s=>calcStats(s.matricule,records.abs,records.ret,records.exp).rc>0).map(s=>{const st=calcStats(s.matricule,records.abs,records.ret,records.exp);return [s.matricule,s.nom,s.classe,st.rc,st.rm];})];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(retR),"Retards");
+  const sR=[["Date","Matricule","Nom","Classe","Code","Motif","Décision"]];
+  ss.forEach(s=>(records.exp[s.matricule]||[]).forEach(e=>sR.push([e.date,s.matricule,s.nom,s.classe,`${e.code} – ${CODES[e.code]||""}`,e.motif||"",e.note||""])));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sR),"Sanctions");
+  XLSX.writeFile(wb, filterClasse?`LPK_${filterClasse.replace(/\s/g,"_")}.xlsx`:"LPK_Suivi_Complet.xlsx");
+}
+
+/* ─── STYLES ─────────────────────────────────────────────────────────── */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+:root{
+  --sand:#f3efe7;--white:#ffffff;--ink:#17120a;--gold:#b8962e;--gold-lt:#fdf6e3;
+  --muted:#8a8070;--border:#e4ddd0;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,.07);
+  --r:#b91c1c;--r-lt:#fef2f2;--y:#92400e;--y-lt:#fffbeb;--g:#166534;--g-lt:#f0fdf4;--p:#5b21b6;--p-lt:#f5f3ff;
+  --sb:260px;--tb:56px;--bn:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{font-family:'Instrument Sans',sans-serif;background:var(--sand);color:var(--ink);min-height:100vh;overscroll-behavior:none;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-thumb{background:#ccc5b5;border-radius:2px;}
+
+/* LAYOUT */
+.wrap{display:flex;min-height:100vh;}
+.sb{position:fixed;top:0;left:0;bottom:0;width:var(--sb);background:var(--ink);color:var(--sand);display:flex;flex-direction:column;z-index:300;transition:transform .26s cubic-bezier(.4,0,.2,1);}
+.sb-ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:299;backdrop-filter:blur(2px);}
+.main{margin-left:var(--sb);display:flex;flex-direction:column;min-height:100vh;flex:1;}
+
+/* TOPBAR */
+.tb{background:var(--white);border-bottom:1px solid var(--border);height:var(--tb);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;}
+.tb-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;}
+.tb-actions{display:flex;align-items:center;gap:8px;}
+.burger{background:none;border:none;cursor:pointer;padding:6px;color:var(--ink);display:none;border-radius:8px;}
+.burger:hover{background:var(--sand);}
+
+/* CONTENT */
+.content{padding:20px;flex:1;padding-bottom:24px;}
+
+/* SIDEBAR INTERNALS */
+.sb-logo-area{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-brand{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#c9a73e;line-height:1.35;}
+.sb-sub{font-size:10.5px;color:rgba(243,239,231,.35);margin-top:3px;}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0;}
+.sb-sec{padding:12px 16px 4px;font-size:9.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(243,239,231,.28);}
+.sb-lnk{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;font-size:13px;color:rgba(243,239,231,.6);border-left:3px solid transparent;transition:all .13s;user-select:none;}
+.sb-lnk:hover{background:rgba(255,255,255,.06);color:var(--sand);}
+.sb-lnk.on{background:rgba(201,167,62,.12);color:#c9a73e;border-left-color:#c9a73e;font-weight:600;}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:10.5px;color:rgba(243,239,231,.28);}
+
+/* GRID */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.c-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:13px;}
+
+/* STAT CARD */
+.sc-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);}
+.sc-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.1;margin:4px 0;}
+.sc-hint{font-size:12px;color:var(--muted);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .13s;font-family:inherit;white-space:nowrap;}
+.btn-dark{background:var(--ink);color:#c9a73e;}
+.btn-dark:hover{background:#2a200e;}
+.btn-outline{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--sand);color:var(--ink);}
+.btn-gold{background:#c9a73e;color:var(--ink);}
+.btn-gold:hover{opacity:.88;}
+.btn-sm{padding:5px 11px;font-size:11.5px;border-radius:7px;}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;}
+.fl{font-size:11.5px;font-weight:600;color:#666;}
+.fi{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#faf8f3;outline:none;transition:border .13s;}
+.fi:focus{border-color:#c9a73e;background:var(--white);}
+
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:#f7f4ed;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 10px;border-bottom:1px solid #f0ece4;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#faf8f3;}
+.sticky{position:sticky;left:0;background:var(--white)!important;z-index:1;}
+tr:hover .sticky{background:#faf8f3!important;}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;}
+.t-r{background:var(--r-lt);color:var(--r);}
+.t-g{background:var(--g-lt);color:var(--g);}
+.t-y{background:var(--y-lt);color:var(--y);}
+.t-p{background:var(--p-lt);color:var(--p);}
+.t-b{background:#dbeafe;color:#1e40af;}
+.t-f{background:#fce7f3;color:#9d174d;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:2px solid;transition:all .13s;user-select:none;}
+
+/* MODAL */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
+.modal{background:var(--white);border-radius:20px;padding:26px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);}
+.m-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;margin-bottom:18px;}
+
+/* AVATAR */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Syne',sans-serif;flex-shrink:0;}
+
+/* MISC */
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.prog{height:7px;background:#f0ece4;border-radius:4px;overflow:hidden;}
+.prog-f{height:100%;border-radius:4px;transition:width .4s;}
+.alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:8px;padding:9px 13px;font-size:12px;margin-bottom:12px;}
+.search-w{position:relative;}.search-w .fi{padding-left:33px;}.s-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#bbb;pointer-events:none;}
+
+/* TOAST */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--ink);color:#c9a73e;padding:10px 20px;border-radius:22px;font-size:12.5px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap;animation:tu .22s ease;}
+@keyframes tu{from{opacity:0;transform:translate(-50%,8px);}to{opacity:1;transform:translate(-50%,0);}}
+
+/* DAY CELLS */
+.dc{cursor:pointer;min-width:36px;text-align:center;transition:background .1s;padding:0;user-select:none;}
+.dc:active{opacity:.65;}
+.ca{background:#fef2f2!important;color:var(--r);font-weight:800;}
+.cj{background:#f0fdf4!important;color:var(--g);font-weight:800;}
+.cr{background:#fffbeb!important;}
+
+/* BOTTOM NAV */
+.bn{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);height:var(--bn);z-index:200;box-shadow:0 -2px 10px rgba(0,0,0,.07);}
+.bn-i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--muted);font-size:10.5px;font-weight:500;border:none;background:none;font-family:inherit;padding:4px 0;transition:color .13s;}
+.bn-i.on{color:var(--ink);}
+.bn-ico{font-size:21px;}
+
+/* PRINT */
+@media print {
+  .sb,.tb,.bn,.no-print{display:none!important;}
+  .main{margin-left:0;}
+  .content{padding:0;}
+  body{background:#fff;}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+  table{font-size:10.5px;}
+  th,td{padding:4px 7px;}
+  @page{margin:12mm;size:A4 landscape;}
+}
+
+/* RESPONSIVE */
+@media(max-width:820px){
+  .sb{transform:translateX(-100%);}
+  .sb.open{transform:translateX(0);}
+  .sb-ovl{display:block;}
+  .main{margin-left:0;}
+  .g3{grid-template-columns:1fr 1fr;}
+  .g2{grid-template-columns:1fr;}
+  .content{padding:13px;padding-bottom:76px;}
+  .tb{padding:0 13px;}
+  .burger{display:flex;}
+  .bn{display:flex;}
+  .tb-actions .btn-outline{display:none;}
+}
+@media(max-width:480px){
+  .g3{grid-template-columns:1fr;}
+  .modal{padding:18px;border-radius:16px;}
+}
+`;
+
+/* ─── MINI COMPONENTS ────────────────────────────────────────────────── */
+function Av({nom,sexe,sz=34}){
+  const init=(nom||"?").split(" ").slice(0,2).map(w=>w[0]).join("");
+  const bg=sexe==="F"?"#fce7f3":"#dbeafe",col=sexe==="F"?"#9d174d":"#1e40af";
+  return <div className="av" style={{width:sz,height:sz,background:bg,color:col,fontSize:sz*.34}}>{init}</div>;
+}
+function Pill({classe}){
+  const cl=c(classe);
+  return <span className="pill" style={{background:cl.lt,color:cl.bg}}>{classe}</span>;
+}
+function Chip({label,active,col}){
+  return <div className="chip" style={{background:active?col.bg:col.lt,color:active?col.lt:col.bg,borderColor:col.bg}}>{label}</div>;
+}
+function Modal({onClose,title,children}){
+  return(
+    <div className="ovl" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="m-title">{title}</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ─── APP ────────────────────────────────────────────────────────────── */
+export default function App(){
+  const [students,setStudents] = useState(STUDENTS);
+  const [records,setRecords] = useState(()=>initRec(STUDENTS));
+  const [page,setPage] = useState("dash");
+  const [cls,setCls] = useState("3ème 1");
+  const [sidebar,setSidebar] = useState(false);
+  const [selSt,setSelSt] = useState(null);
+  const [toast,setToast] = useState(null);
+  const [month,setMonth] = useState(NOW.getMonth());
+  const [year] = useState(NOW.getFullYear());
+
+  // Persistence
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const r1=await window.storage.get("lpk3-st");
+        const r2=await window.storage.get("lpk3-rec");
+        if(r1) setStudents(JSON.parse(r1.value));
+        if(r2) setRecords(JSON.parse(r2.value));
+      }catch{}
+    })();
+  },[]);
+
+  const save=useCallback(async(s,r)=>{
+    try{
+      await window.storage.set("lpk3-st",JSON.stringify(s||students));
+      await window.storage.set("lpk3-rec",JSON.stringify(r||records));
+    }catch{}
+  },[students,records]);
+
+  const toast_=msg=>{setToast(msg);setTimeout(()=>setToast(null),2600);};
+  const go=(p,cl)=>{setPage(p);if(cl)setCls(cl);setSidebar(false);};
+
+  const updSt=(mat,upd)=>{const ns=students.map(s=>s.matricule===mat?{...s,...upd}:s);setStudents(ns);save(ns,null);toast_("✓ Modifications enregistrées");};
+  const addSt=(s)=>{const ns=[...students,s];const nr={...records,abs:{...records.abs,[s.matricule]:{}},ret:{...records.ret,[s.matricule]:{}},exp:{...records.exp,[s.matricule]:[]}};setStudents(ns);setRecords(nr);save(ns,nr);toast_("✓ Élève ajouté(e)");};
+  const setAbs_=(mat,dk,v)=>{const nr={...records,abs:{...records.abs,[mat]:{...records.abs[mat],[dk]:v}}};setRecords(nr);save(null,nr);};
+  const setRet_=(mat,dk,v)=>{const nr={...records,ret:{...records.ret,[mat]:{...records.ret[mat],[dk]:v}}};setRecords(nr);save(null,nr);};
+  const addExp_=(mat,e)=>{const nr={...records,exp:{...records.exp,[mat]:[...(records.exp[mat]||[]),e]}};setRecords(nr);save(null,nr);toast_("✓ Sanction enregistrée");};
+
+  const mKey=`${year}-${String(month+1).padStart(2,"0")}`;
+  const dIM=new Date(year,month+1,0).getDate();
+
+  /* SIDEBAR */
+  const SB=()=>(
+    <>
+      {sidebar&&<div className="sb-ovl" onClick={()=>setSidebar(false)}/>}
+      <aside className={`sb${sidebar?" open":""}`}>
+        <div className="sb-logo-area">
+          <div className="sb-brand">Lycée Provincial<br/>de Koudougou</div>
+          <div className="sb-sub">Vie Scolaire · 2024–2025</div>
+        </div>
+        <nav className="sb-nav">
+          <div className="sb-sec">Vue d'ensemble</div>
+          {[["dash","📊","Tableau de bord"],["eleves","👥","Liste des élèves"],["fiche","🔍","Fiche élève"]].map(([p,ic,lb])=>(
+            <div key={p} className={`sb-lnk${page===p?" on":""}`} onClick={()=>go(p)}>
+              <span style={{fontSize:15}}>{ic}</span>{lb}
+            </div>
+          ))}
+          <div className="sb-sec">Absences</div>
+          {CLASSES.map(cl=>(
+            <div key={cl} className={`sb-lnk${page==="abs"&&cls===cl?" on":""}`} onClick={()=>go("abs",cl)}>
+              <span className="sb-dot" style={{background:c(cl).acc}}/>{cl}
+            </div>
+          ))}
+          <div className="sb-sec">Retards</div>
+          {CLASSES.map(cl=>(
+            <div key={cl} className={`sb-lnk${page==="ret"&&cls===cl?" on":""}`} onClick={()=>go("ret",cl)}>
+              <span className="sb-dot" style={{background:c(cl).acc}}/>{cl}
+            </div>
+          ))}
+          <div className="sb-sec">Sanctions</div>
+          {CLASSES.map(cl=>(
+            <div key={cl} className={`sb-lnk${page==="exp"&&cls===cl?" on":""}`} onClick={()=>go("exp",cl)}>
+              <span className="sb-dot" style={{background:c(cl).acc}}/>{cl}
+            </div>
+          ))}
+          <div className="sb-sec">Exports</div>
+          <div className="sb-lnk no-print" onClick={()=>doExportExcel(students,records)}><span style={{fontSize:15}}>📥</span>Excel complet</div>
+          <div className="sb-lnk no-print" onClick={()=>window.print()}><span style={{fontSize:15}}>🖨️</span>Imprimer / PDF</div>
+        </nav>
+        <div className="sb-foot">{students.length} élèves · 3 classes</div>
+      </aside>
+    </>
+  );
+
+  /* BOTTOM NAV */
+  const BN=()=>(
+    <nav className="bn">
+      {[["dash","📊","Accueil"],["eleves","👥","Élèves"],["abs","📋","Absences"],["ret","⏰","Retards"],["exp","⚠️","Sanctions"]].map(([p,ic,lb])=>(
+        <button key={p} className={`bn-i${page===p?" on":""}`} onClick={()=>go(p)}>
+          <span className="bn-ico">{ic}</span>{lb}
+        </button>
+      ))}
+    </nav>
+  );
+
+  /* PAGE: DASH */
+  const Dash=()=>{
+    const totNJ=students.reduce((s,st)=>s+calcStats(st.matricule,records.abs,records.ret,records.exp).nj,0);
+    const totRet=students.reduce((s,st)=>s+calcStats(st.matricule,records.abs,records.ret,records.exp).rc,0);
+    const alerts=students.filter(s=>{const st=calcStats(s.matricule,records.abs,records.ret,records.exp);return st.nj>=6||st.rc>=3;});
+    return(
+      <div>
+        <div className="g3">
+          <div className="card"><div className="sc-label">👨‍🎓 Total élèves</div><div className="sc-val">{students.length}</div><div className="sc-hint">3 classes · 2024–2025</div></div>
+          <div className="card"><div className="sc-label">📋 Heures abs. NJ</div><div className="sc-val" style={{color:"var(--r)"}}>{totNJ}<span style={{fontSize:18}}>h</span></div><div className="sc-hint">toutes classes</div></div>
+          <div className="card"><div className="sc-label">⏰ Retards</div><div className="sc-val" style={{color:"var(--y)"}}>{totRet}</div><div className="sc-hint">occurrences totales</div></div>
+        </div>
+        <div className="g3">
+          {CLASSES.map(cl=>{
+            const cs=students.filter(s=>s.classe===cl);
+            const nh=cs.reduce((s,st)=>s+calcStats(st.matricule,records.abs,records.ret,records.exp).nj,0);
+            const rc=cs.reduce((s,st)=>s+calcStats(st.matricule,records.abs,records.ret,records.exp).rc,0);
+            const sc=cs.reduce((s,st)=>s+calcStats(st.matricule,records.abs,records.ret,records.exp).sanct,0);
+            const col=c(cl);
+            return(
+              <div key={cl} className="card" style={{borderTop:`4px solid ${col.bg}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
+                  <div><div style={{fontFamily:"'Syne',sans-serif",fontSize:15,fontWeight:800,color:col.bg}}>{cl}</div><div style={{fontSize:11.5,color:"var(--muted)"}}>{cs.length} élèves</div></div>
+                  <div style={{background:col.lt,borderRadius:10,padding:"5px 9px",textAlign:"center"}}><div style={{fontFamily:"'Syne',sans-serif",fontSize:19,fontWeight:800,color:col.bg}}>{cs.filter(s=>calcStats(s.matricule,records.abs,records.ret,records.exp).nj===0).length}</div><div style={{fontSize:9.5,color:col.bg,fontWeight:700}}>Sans abs.</div></div>
+                </div>
+                <div style={{display:"flex",gap:8,marginBottom:12}}>
+                  {[[nh+"h","var(--r)","var(--r-lt)","ABS NJ"],[rc,"var(--y)","var(--y-lt)","RETARDS"],[sc,"var(--p)","var(--p-lt)","SANCT."]].map(([v,col2,bg2,lb2])=>(
+                    <div key={lb2} style={{flex:1,background:bg2,borderRadius:7,padding:"7px 8px"}}><div style={{fontFamily:"'Syne',sans-serif",fontSize:17,fontWeight:800,color:col2}}>{v}</div><div style={{fontSize:9.5,color:col2,fontWeight:700,marginTop:1}}>{lb2}</div></div>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:7}}>
+                  <button className="btn btn-outline btn-sm" style={{flex:1}} onClick={()=>go("abs",cl)}>📋 Abs.</button>
+                  <button className="btn btn-outline btn-sm" style={{flex:1}} onClick={()=>go("ret",cl)}>⏰ Ret.</button>
+                  <button className="btn btn-gold btn-sm no-print" onClick={()=>doExportExcel(students,records,cl)}>📥</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="card">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div className="c-title" style={{marginBottom:0}}>⚠️ Élèves à surveiller</div>
+            <span className="tag t-r">{alerts.length} alerte(s)</span>
+          </div>
+          {alerts.length===0
+            ?<div style={{color:"var(--muted)",fontSize:12.5,padding:"8px 0"}}>✅ Aucune alerte — tous les élèves sont en règle.</div>
+            :(
+              <div className="tw"><table>
+                <thead><tr><th>Élève</th><th>Classe</th><th>Abs NJ</th><th>Retards</th><th>Sanctions</th><th className="no-print"></th></tr></thead>
+                <tbody>{alerts.map(s=>{const st=calcStats(s.matricule,records.abs,records.ret,records.exp);return(
+                  <tr key={s.matricule}>
+                    <td><div style={{display:"flex",alignItems:"center",gap:7}}><Av nom={s.nom} sexe={s.sexe}/><div><div style={{fontWeight:600}}>{s.nom}</div><div style={{fontSize:10.5,color:"var(--muted)"}}>{s.matricule}</div></div></div></td>
+                    <td><Pill classe={s.classe}/></td>
+                    <td>{st.nj>0?<span className="tag t-r">{st.nj}h</span>:"—"}</td>
+                    <td>{st.rc>0?<span className="tag t-y">{st.rc}</span>:"—"}</td>
+                    <td>{st.sanct>0?<span className="tag t-p">{st.sanct}</span>:"—"}</td>
+                    <td className="no-print"><button className="btn btn-outline btn-sm" onClick={()=>{setSelSt(s);go("fiche");}}>Fiche →</button></td>
+                  </tr>
+                );})}</tbody>
+              </table></div>
+            )
+          }
+        </div>
+      </div>
+    );
+  };
+
+  /* PAGE: ÉLÈVES */
+  const Eleves=()=>{
+    const [q,setQ]=useState("");
+    const [fc,setFc]=useState("");
+    const [editS,setEditS]=useState(null);
+    const [addM,setAddM]=useState(false);
+    const filt=students.filter(s=>(!fc||s.classe===fc)&&(s.nom.toLowerCase().includes(q.toLowerCase())||s.matricule.toLowerCase().includes(q.toLowerCase())));
+    const EditM=({s})=>{
+      const [f,setF]=useState({...s});
+      return(<Modal onClose={()=>setEditS(null)} title="✏️ Modifier l'élève">
+        {["nom","age","lieu","tel"].map(k=>(<div className="fg" key={k}><label className="fl">{{nom:"Nom et Prénom(s)",age:"Âge",lieu:"Lieu de naissance",tel:"Tél. Tuteur"}[k]}</label><input className="fi" value={f[k]} onChange={e=>setF({...f,[k]:k==="age"?+e.target.value:e.target.value})}/></div>))}
+        <div className="fg"><label className="fl">Sexe</label><select className="fi" value={f.sexe} onChange={e=>setF({...f,sexe:e.target.value})}><option value="M">Masculin</option><option value="F">Féminin</option></select></div>
+        <div className="fg"><label className="fl">Classe</label><select className="fi" value={f.classe} onChange={e=>setF({...f,classe:e.target.value})}>{CLASSES.map(cl=><option key={cl} value={cl}>{cl}</option>)}</select></div>
+        <div style={{display:"flex",gap:9,justifyContent:"flex-end",marginTop:6}}><button className="btn btn-outline" onClick={()=>setEditS(null)}>Annuler</button><button className="btn btn-dark" onClick={()=>{updSt(s.matricule,f);setEditS(null);}}>Enregistrer</button></div>
+      </Modal>);
+    };
+    const AddM=()=>{
+      const [f,setF]=useState({nom:"",sexe:"M",age:15,lieu:"",tel:"",classe:"3ème 1"});
+      return(<Modal onClose={()=>setAddM(false)} title="➕ Ajouter un élève">
+        {["nom","age","lieu","tel"].map(k=>(<div className="fg" key={k}><label className="fl">{{nom:"Nom et Prénom(s)",age:"Âge",lieu:"Lieu de naissance",tel:"Tél. Tuteur"}[k]}</label><input className="fi" value={f[k]} onChange={e=>setF({...f,[k]:k==="age"?+e.target.value:e.target.value})}/></div>))}
+        <div className="fg"><label className="fl">Sexe</label><select className="fi" value={f.sexe} onChange={e=>setF({...f,sexe:e.target.value})}><option value="M">Masculin</option><option value="F">Féminin</option></select></div>
+        <div className="fg"><label className="fl">Classe</label><select className="fi" value={f.classe} onChange={e=>setF({...f,classe:e.target.value})}>{CLASSES.map(cl=><option key={cl} value={cl}>{cl}</option>)}</select></div>
+        <div style={{display:"flex",gap:9,justifyContent:"flex-end",marginTop:6}}><button className="btn btn-outline" onClick={()=>setAddM(false)}>Annuler</button><button className="btn btn-dark" onClick={()=>{const pfx={"3ème 1":"LPK-3E1","3ème 2":"LPK-3E2","1ère A3":"LPK-1A3"}[f.classe];const n=String(students.filter(s=>s.classe===f.classe).length+1).padStart(3,"0");addSt({...f,no:students.length+1,matricule:`${pfx}-${n}`});setAddM(false);}}>Ajouter</button></div>
+      </Modal>);
+    };
+    return(<div>
+      {editS&&<EditM s={editS}/>}
+      {addM&&<AddM/>}
+      <div style={{display:"flex",gap:9,marginBottom:14,flexWrap:"wrap"}}>
+        <div className="search-w" style={{flex:"1 1 180px"}}><span className="s-ico">🔍</span><input className="fi" placeholder="Nom ou matricule..." value={q} onChange={e=>setQ(e.target.value)}/></div>
+        <select className="fi" style={{width:150}} value={fc} onChange={e=>setFc(e.target.value)}><option value="">Toutes les classes</option>{CLASSES.map(cl=><option key={cl} value={cl}>{cl}</option>)}</select>
+        <button className="btn btn-outline btn-sm no-print" onClick={()=>doExportExcel(students,records,fc||null)}>📥 Excel</button>
+        <button className="btn btn-outline btn-sm no-print" onClick={()=>window.print()}>🖨️ PDF</button>
+        <button className="btn btn-dark btn-sm no-print" onClick={()=>setAddM(true)}>➕ Ajouter</button>
+      </div>
+      <div className="card">
+        <div style={{fontSize:11.5,color:"var(--muted)",marginBottom:9}}>{filt.length} élève(s)</div>
+        <div className="tw"><table>
+          <thead><tr><th>#</th><th>Matricule</th><th>Nom et Prénom(s)</th><th>Sexe</th><th>Âge</th><th>Lieu</th><th>Téléphone</th><th>Classe</th><th>Abs NJ</th><th>Retards</th><th className="no-print">Actions</th></tr></thead>
+          <tbody>{filt.map((s,i)=>{const st=calcStats(s.matricule,records.abs,records.ret,records.exp);return(
+            <tr key={s.matricule}>
+              <td style={{color:"var(--muted)",fontSize:11}}>{i+1}</td>
+              <td style={{fontFamily:"monospace",fontSize:11}}>{s.matricule}</td>
+              <td><div style={{display:"flex",alignItems:"center",gap:7}}><Av nom={s.nom} sexe={s.sexe} sz={28}/><span style={{fontWeight:500}}>{s.nom}</span></div></td>
+              <td><span className={`tag ${s.sexe==="M"?"t-b":"t-f"}`}>{s.sexe}</span></td>
+              <td>{s.age} ans</td><td>{s.lieu}</td>
+              <td style={{fontFamily:"monospace",fontSize:11}}>{s.tel}</td>
+              <td><Pill classe={s.classe}/></td>
+              <td>{st.nj>0?<span className="tag t-r">{st.nj}h</span>:<span className="tag t-g">0h</span>}</td>
+              <td>{st.rc>0?<span className="tag t-y">{st.rc}</span>:"—"}</td>
+              <td className="no-print"><div style={{display:"flex",gap:4}}><button className="btn btn-outline btn-icon btn-sm" onClick={()=>{setSelSt(s);go("fiche");}}>👁</button><button className="btn btn-outline btn-icon btn-sm" onClick={()=>setEditS(s)}>✏️</button></div></td>
+            </tr>
+          );})}</tbody>
+        </table></div>
+      </div>
+    </div>);
+  };
+
+  /* PAGE: REGISTER */
+  const Reg=({type})=>{
+    const isAbs=type==="abs";
+    const cs=students.filter(s=>s.classe===cls);
+    const dkeys=Array.from({length:dIM},(_,i)=>`${mKey}-${String(i+1).padStart(2,"0")}`);
+    const cycleAbs=(mat,dk)=>setAbs_(mat,dk,{"":'A','A':'J','J':''}[records.abs[mat]?.[dk]||""]);
+    return(<div>
+      <div style={{display:"flex",gap:9,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+        <div className="chips" style={{flex:"1 1 auto"}}>
+          {CLASSES.map(cl=>(<div key={cl} onClick={()=>setCls(cl)}><Chip label={cl} active={cls===cl} col={c(cl)}/></div>))}
+        </div>
+        <select className="fi" style={{width:160}} value={`${year}-${month}`} onChange={e=>{const[,m]=e.target.value.split("-");setMonth(+m);}}>
+          {MONTHS.map((m2,i)=><option key={i} value={`${year}-${i}`}>{m2} {year}</option>)}
+        </select>
+        <button className="btn btn-outline btn-sm no-print" onClick={()=>doExportExcel(students,records,cls)}>📥 Excel</button>
+        <button className="btn btn-outline btn-sm no-print" onClick={()=>window.print()}>🖨️ PDF</button>
+      </div>
+      <div className="alert-info no-print">{isAbs?"Cliquer sur une cellule : vide → A (absent) → J (justifié) → vide":"Saisir le nombre de minutes de retard. Laisser vide si à l'heure."}</div>
+      <div className="card" style={{padding:0}}>
+        <div className="tw"><table>
+          <thead><tr>
+            <th className="sticky" style={{minWidth:170,padding:"8px 11px"}}>Élève</th>
+            {Array.from({length:dIM},(_,i)=><th key={i} style={{minWidth:34,textAlign:"center",padding:"8px 3px"}}>{i+1}</th>)}
+            <th style={{textAlign:"center",minWidth:52}}>{isAbs?"Total":"Min"}</th>
+          </tr></thead>
+          <tbody>{cs.map(s=>{
+            const tot=isAbs
+              ?Object.entries(records.abs[s.matricule]||{}).filter(([k,v])=>k.startsWith(mKey)&&v!=="").length*2
+              :Object.entries(records.ret[s.matricule]||{}).filter(([k])=>k.startsWith(mKey)).reduce((sm,[,v])=>sm+(v||0),0);
+            return(<tr key={s.matricule}>
+              <td className="sticky" style={{padding:"7px 11px"}}><div style={{display:"flex",alignItems:"center",gap:6}}><Av nom={s.nom} sexe={s.sexe} sz={24}/><span style={{fontWeight:500,fontSize:12,whiteSpace:"nowrap"}}>{s.nom}</span></div></td>
+              {dkeys.map(dk=>{
+                if(isAbs){const v=records.abs[s.matricule]?.[dk]||"";return(<td key={dk} className={`dc${v==="A"?" ca":v==="J"?" cj":""}`} style={{padding:"7px 0",fontSize:12.5}} onClick={()=>cycleAbs(s.matricule,dk)}>{v}</td>);}
+                else{const v=records.ret[s.matricule]?.[dk];return(<td key={dk} className={`dc${v>0?" cr":""}`} style={{padding:"2px 3px"}}><input style={{width:34,border:"none",background:"transparent",textAlign:"center",fontSize:11.5,fontWeight:v>0?700:400,color:v>0?"var(--y)":"#ccc",outline:"none",fontFamily:"inherit",padding:"6px 0"}} type="number" min="0" max="120" value={v||""} onChange={e=>setRet_(s.matricule,dk,parseInt(e.target.value)||0)} placeholder="—"/></td>);}
+              })}
+              <td style={{textAlign:"center",fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:13.5,color:tot>0?(isAbs?"var(--r)":"var(--y)"):"var(--muted)"}}>{tot>0?tot+(isAbs?"h":""):"—"}</td>
+            </tr>);})}
+          </tbody>
+        </table></div>
+      </div>
+    </div>);
+  };
+
+  /* PAGE: SANCTIONS */
+  const Exp=()=>{
+    const [showM,setShowM]=useState(false);
+    const [f,setF]=useState({matricule:"",date:NOW.toISOString().split("T")[0],motif:"",code:"E1",note:""});
+    const cs=students.filter(s=>s.classe===cls);
+    const all=cs.flatMap(s=>(records.exp[s.matricule]||[]).map(e=>({...e,student:s}))).sort((a,b)=>b.date.localeCompare(a.date));
+    return(<div>
+      <div style={{display:"flex",gap:9,marginBottom:14,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
+        <div className="chips">{CLASSES.map(cl=>(<div key={cl} onClick={()=>setCls(cl)}><Chip label={cl} active={cls===cl} col={c(cl)}/></div>))}</div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-outline btn-sm no-print" onClick={()=>doExportExcel(students,records,cls)}>📥 Excel</button>
+          <button className="btn btn-dark btn-sm no-print" onClick={()=>setShowM(true)}>⚠️ Nouvelle sanction</button>
+        </div>
+      </div>
+      {showM&&<Modal onClose={()=>setShowM(false)} title="⚠️ Enregistrer une sanction">
+        <div className="fg"><label className="fl">Élève</label><select className="fi" value={f.matricule} onChange={e=>setF({...f,matricule:e.target.value})}><option value="">— Sélectionner —</option>{cs.map(s=><option key={s.matricule} value={s.matricule}>{s.nom}</option>)}</select></div>
+        <div className="fg"><label className="fl">Date</label><input className="fi" type="date" value={f.date} onChange={e=>setF({...f,date:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Code Sanction</label><select className="fi" value={f.code} onChange={e=>setF({...f,code:e.target.value})}>{Object.entries(CODES).map(([k,v])=><option key={k} value={k}>{k} – {v}</option>)}</select></div>
+        <div className="fg"><label className="fl">Motif</label><input className="fi" placeholder="Décrivez le motif..." value={f.motif} onChange={e=>setF({...f,motif:e.target.value})}/></div>
+        <div className="fg"><label className="fl">Décision prise</label><input className="fi" placeholder="Décision, remarques..." value={f.note} onChange={e=>setF({...f,note:e.target.value})}/></div>
+        <div style={{display:"flex",gap:9,justifyContent:"flex-end",marginTop:6}}><button className="btn btn-outline" onClick={()=>setShowM(false)}>Annuler</button><button className="btn btn-dark" onClick={()=>{if(!f.matricule)return;addExp_(f.matricule,{...f,id:Date.now()});setShowM(false);setF({matricule:"",date:NOW.toISOString().split("T")[0],motif:"",code:"E1",note:""});}}>Enregistrer</button></div>
+      </Modal>}
+      <div className="card">
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <div className="c-title" style={{marginBottom:0}}>Registre sanctions — {cls}</div>
+          <span className="tag t-p">{all.length} sanction(s)</span>
+        </div>
+        {all.length===0
+          ?<div style={{color:"var(--muted)",fontSize:12.5,padding:"8px 0"}}>✅ Aucune sanction pour cette classe.</div>
+          :(<div className="tw"><table>
+            <thead><tr><th>Date</th><th>Élève</th><th>Code</th><th>Motif</th><th>Décision</th></tr></thead>
+            <tbody>{all.map(e=>(
+              <tr key={e.id}>
+                <td style={{whiteSpace:"nowrap",fontSize:11.5}}>{e.date}</td>
+                <td><div style={{display:"flex",alignItems:"center",gap:7}}><Av nom={e.student.nom} sexe={e.student.sexe} sz={26}/><span style={{fontWeight:500}}>{e.student.nom}</span></div></td>
+                <td><span className="tag t-p">{e.code}<br/><span style={{fontSize:9,fontWeight:500}}>{CODES[e.code]}</span></span></td>
+                <td style={{fontSize:12,maxWidth:200}}>{e.motif||"—"}</td>
+                <td style={{fontSize:11.5,color:"var(--muted)"}}>{e.note||"—"}</td>
+              </tr>
+            ))}</tbody>
+          </table></div>)
+        }
+      </div>
+    </div>);
+  };
+
+  /* PAGE: FICHE */
+  const Fiche=()=>{
+    const [q,setQ]=useState("");
+    const [s,setS]=useState(selSt);
+    if(!s){
+      const matches=q?students.filter(st=>st.nom.toLowerCase().includes(q.toLowerCase())||st.matricule.toLowerCase().includes(q.toLowerCase())).slice(0,8):[];
+      return(<div style={{maxWidth:420,margin:"0 auto",paddingTop:6}}>
+        <div className="search-w" style={{marginBottom:14}}><span className="s-ico">🔍</span><input className="fi" placeholder="Nom ou matricule de l'élève..." value={q} onChange={e=>setQ(e.target.value)} autoFocus/></div>
+        {matches.length>0&&<div className="card" style={{padding:7}}>
+          {matches.map(st=>(<div key={st.matricule} style={{display:"flex",alignItems:"center",gap:11,padding:"9px 11px",cursor:"pointer",borderRadius:10,transition:"background .1s"}} onMouseOver={e=>e.currentTarget.style.background="var(--sand)"} onMouseOut={e=>e.currentTarget.style.background="transparent"} onClick={()=>{setS(st);setSelSt(st);}}>
+            <Av nom={st.nom} sexe={st.sexe} sz={40}/>
+            <div><div style={{fontWeight:600,fontSize:14}}>{st.nom}</div><div style={{fontSize:11.5,color:"var(--muted)"}}>{st.matricule} · {st.classe}</div></div>
+          </div>))}
+        </div>}
+        {q&&matches.length===0&&<div style={{color:"var(--muted)",textAlign:"center",padding:20,fontSize:13}}>Aucun résultat pour « {q} »</div>}
+      </div>);
+    }
+    const st=calcStats(s.matricule,records.abs,records.ret,records.exp);
+    const col=c(s.classe);
+    const absH=Object.entries(records.abs[s.matricule]||{}).filter(([,v])=>v!=="").sort((a,b)=>b[0].localeCompare(a[0]));
+    const retH=Object.entries(records.ret[s.matricule]||{}).filter(([,v])=>v>0).sort((a,b)=>b[0].localeCompare(a[0]));
+    const sancts=records.exp[s.matricule]||[];
+    return(<div>
+      <button className="btn btn-outline btn-sm no-print" style={{marginBottom:14}} onClick={()=>{setS(null);setSelSt(null);}}>← Retour</button>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 2fr",gap:14,marginBottom:14}}>
+        <div className="card" style={{borderTop:`4px solid ${col.bg}`}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:11,marginBottom:14}}>
+            <Av nom={s.nom} sexe={s.sexe} sz={68}/>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontFamily:"'Syne',sans-serif",fontSize:16,fontWeight:800}}>{s.nom}</div>
+              <div style={{fontFamily:"monospace",fontSize:11,color:"var(--muted)",marginTop:3}}>{s.matricule}</div>
+            </div>
+            <Pill classe={s.classe}/>
+          </div>
+          <div className="divider"/>
+          {[["Sexe",s.sexe==="M"?"Masculin":"Féminin"],["Âge",`${s.age} ans`],["Lieu de naissance",s.lieu],["Tél. Tuteur",s.tel]].map(([k,v])=>(
+            <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",fontSize:12.5,borderBottom:"1px solid #f0ece4"}}><span style={{color:"var(--muted)"}}>{k}</span><span style={{fontWeight:500}}>{v}</span></div>
+          ))}
+          <div style={{marginTop:12}}><button className="btn btn-outline btn-sm no-print" style={{width:"100%"}} onClick={()=>doExportExcel([s],records)}>📥 Exporter Excel</button></div>
+        </div>
+        <div>
+          <div className="g2" style={{marginBottom:13}}>
+            {[["Abs. NJ","var(--r)","var(--r-lt)",st.nj+"h"],["Abs. Justif.","var(--g)","var(--g-lt)",st.j+"h"],["Retards","var(--y)","var(--y-lt)",st.rm+" min"],["Sanctions","var(--p)","var(--p-lt)",st.sanct]].map(([lb,col2,bg2,val])=>(
+              <div key={lb} className="card" style={{background:bg2,border:`1px solid ${bg2}`,padding:"13px 15px"}}><div style={{fontFamily:"'Syne',sans-serif",fontSize:24,fontWeight:800,color:col2}}>{val}</div><div style={{fontSize:11,fontWeight:600,color:col2,marginTop:4}}>{lb}</div></div>
+            ))}
+          </div>
+          <div className="card">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}><span style={{fontSize:11.5,color:"var(--muted)"}}>Taux de présence estimé</span><span style={{fontFamily:"'Syne',sans-serif",fontSize:19,fontWeight:800,color:st.pct>90?"var(--g)":st.pct>75?"var(--y)":"var(--r)"}}>{st.pct}%</span></div>
+            <div className="prog"><div className="prog-f" style={{width:`${st.pct}%`,background:st.pct>90?"var(--g)":st.pct>75?"var(--y)":"var(--r)"}}/></div>
+          </div>
+        </div>
+      </div>
+      <div className="g2">
+        <div className="card"><div className="c-title" style={{fontSize:14}}>📋 Absences</div>{absH.length===0?<div style={{color:"var(--muted)",fontSize:12.5}}>Aucune absence</div>:absH.slice(0,12).map(([k,v])=>(<div key={k} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:12.5,borderBottom:"1px solid #f0ece4"}}><span style={{color:"var(--muted)"}}>{k}</span><span className={`tag ${v==="A"?"t-r":"t-g"}`}>{v==="A"?"Absent(e)":"Justifié(e)"}</span></div>))}</div>
+        <div className="card"><div className="c-title" style={{fontSize:14}}>⏰ Retards</div>{retH.length===0?<div style={{color:"var(--muted)",fontSize:12.5}}>Aucun retard</div>:retH.slice(0,12).map(([k,v])=>(<div key={k} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:12.5,borderBottom:"1px solid #f0ece4"}}><span style={{color:"var(--muted)"}}>{k}</span><span className="tag t-y">{v} min</span></div>))}</div>
+      </div>
+      {sancts.length>0&&<div className="card" style={{marginTop:13}}>
+        <div className="c-title" style={{fontSize:14}}>⚠️ Sanctions ({sancts.length})</div>
+        <div className="tw"><table><thead><tr><th>Date</th><th>Code</th><th>Motif</th><th>Décision</th></tr></thead><tbody>{sancts.map(e=>(<tr key={e.id}><td style={{fontSize:11.5}}>{e.date}</td><td><span className="tag t-p">{e.code}</span></td><td style={{fontSize:12}}>{e.motif||"—"}</td><td style={{fontSize:11.5,color:"var(--muted)"}}>{e.note||"—"}</td></tr>))}</tbody></table></div>
+      </div>}
+    </div>);
+  };
+
+  /* RENDER */
+  const pages={dash:<Dash/>,eleves:<Eleves/>,abs:<Reg type="abs"/>,ret:<Reg type="ret"/>,exp:<Exp/>,fiche:<Fiche/>};
+  const labels={dash:"📊 Tableau de Bord",eleves:"👥 Liste des Élèves",abs:`📋 Absences — ${cls}`,ret:`⏰ Retards — ${cls}`,exp:`⚠️ Sanctions — ${cls}`,fiche:"🔍 Fiche Élève"};
+
+  return(<>
+    <style>{CSS}</style>
+    <div className="wrap">
+      <SB/>
+      <div className="main">
+        <header className="tb">
+          <div style={{display:"flex",alignItems:"center",gap:9}}>
+            <button className="burger" onClick={()=>setSidebar(!sidebar)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span className="tb-title">{labels[page]}</span>
+          </div>
+          <div className="tb-actions">
+            <button className="btn btn-outline btn-sm no-print" onClick={()=>doExportExcel(students,records)}>📥 Excel</button>
+            <button className="btn btn-outline btn-sm no-print" onClick={()=>window.print()}>🖨️ PDF</button>
+            <span style={{fontSize:11,color:"var(--muted)",display:"flex",alignItems:"center",gap:5}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"var(--g)",display:"inline-block"}}/>
+              Sync auto
+            </span>
+          </div>
+        </header>
+        <main className="content">{pages[page]}</main>
+      </div>
+      <BN/>
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  </>);
+}
